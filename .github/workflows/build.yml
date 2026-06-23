@@ -35,31 +35,31 @@ jobs:
 
       - name: Force compileSdk 36 for all modules
         run: |
+          KTS_SNIPPET='
+          subprojects {
+              afterEvaluate {
+                  extensions.findByType<com.android.build.gradle.BaseExtension>()?.let {
+                      it.compileSdkVersion(36)
+                  }
+              }
+          }
+          '
+          GROOVY_SNIPPET='
+          subprojects {
+              afterEvaluate { p ->
+                  if (p.hasProperty("android")) {
+                      p.android {
+                          compileSdkVersion 36
+                      }
+                  }
+              }
+          }
+          '
           if [ -f android/build.gradle.kts ]; then
-            cat >> android/build.gradle.kts << 'EOF'
-
-subprojects {
-    afterEvaluate {
-        extensions.findByType<com.android.build.gradle.BaseExtension>()?.let {
-            it.compileSdkVersion(36)
-        }
-    }
-}
-EOF
+            echo "$KTS_SNIPPET" >> android/build.gradle.kts
           fi
           if [ -f android/build.gradle ]; then
-            cat >> android/build.gradle << 'EOF'
-
-subprojects {
-    afterEvaluate { proj ->
-        if (proj.hasProperty('android')) {
-            proj.android {
-                compileSdkVersion 36
-            }
-        }
-    }
-}
-EOF
+            echo "$GROOVY_SNIPPET" >> android/build.gradle
           fi
 
       - name: Get packages
