@@ -1,0 +1,45 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Save custom files
+        run: |
+          mkdir -p /tmp/custom/lib
+          cp pubspec.yaml /tmp/custom/pubspec.yaml
+          cp lib/main.dart /tmp/custom/lib/main.dart
+
+      - name: Scaffold Flutter project (android only)
+        run: flutter create . --project-name ino_tires_app --org uz.inotires --platforms=android
+
+      - name: Restore custom files
+        run: |
+          cp /tmp/custom/pubspec.yaml ./pubspec.yaml
+          cp /tmp/custom/lib/main.dart ./lib/main.dart
+
+      - name: Add internet permission
+        run: |
+          sed -i '/<manifest /a\    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ino-tires-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
