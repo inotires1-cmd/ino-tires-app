@@ -33,35 +33,6 @@ jobs:
         run: |
           sed -i '/<manifest /a\    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
 
-      - name: Force compileSdk 36 for all modules
-        run: |
-          KTS_SNIPPET='
-          subprojects {
-              afterEvaluate {
-                  extensions.findByType<com.android.build.gradle.BaseExtension>()?.let {
-                      it.compileSdkVersion(36)
-                  }
-              }
-          }
-          '
-          GROOVY_SNIPPET='
-          subprojects {
-              afterEvaluate { p ->
-                  if (p.hasProperty("android")) {
-                      p.android {
-                          compileSdkVersion 36
-                      }
-                  }
-              }
-          }
-          '
-          if [ -f android/build.gradle.kts ]; then
-            echo "$KTS_SNIPPET" >> android/build.gradle.kts
-          fi
-          if [ -f android/build.gradle ]; then
-            echo "$GROOVY_SNIPPET" >> android/build.gradle
-          fi
-
       - name: Get packages
         run: flutter pub get
 
