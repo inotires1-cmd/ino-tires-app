@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:file_picker/file_picker.dart';
 
 const String kSiteUrl = 'https://inotires.uz';
 const String kAppName = 'INO TIRES';
@@ -94,45 +92,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
       )
       ..loadRequest(Uri.parse(kSiteUrl));
 
-    if (controller.platform is AndroidWebViewController) {
-      final androidController = controller.platform as AndroidWebViewController;
-      androidController.setOnShowFileSelector(_androidFilePicker);
-    }
-
     _controller = controller;
   }
 
-  Future<List<String>> _androidFilePicker(FileSelectorParams params) async {
-    try {
-      FileType type = FileType.any;
-      List<String>? allowedExtensions;
-
-      final accepts = params.acceptTypes.join(',').toLowerCase();
-      if (accepts.contains('image')) {
-        type = FileType.image;
-      } else if (accepts.contains('sheet') ||
-          accepts.contains('excel') ||
-          accepts.contains('csv') ||
-          accepts.contains('xls')) {
-        type = FileType.custom;
-        allowedExtensions = ['xlsx', 'xls', 'csv'];
-      }
-
-      final result = await FilePicker.platform.pickFiles(
-        type: type,
-        allowedExtensions: allowedExtensions,
-        allowMultiple: params.mode == FileSelectorMode.openMultiple,
-      );
-
-      if (result == null) return [];
-      return result.files
-          .where((f) => f.path != null)
-          .map((f) => Uri.file(f.path!).toString())
-          .toList();
-    } catch (_) {
-      return [];
-    }
-  }
   Future<void> _launchExternally(Uri uri) async {
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -172,7 +134,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         if (shouldPop && context.mounted) {
           Navigator.of(context).maybePop();
         }
-      },
+        },
       child: Scaffold(
         body: Stack(
           children: [
